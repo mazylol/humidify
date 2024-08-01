@@ -30,6 +30,31 @@ func getTermWH() (int, int) {
 	return width, height - 1
 }
 
+func randRange(min, max int) int {
+	return rand.IntN(max-min) + min
+}
+
+func handleDrop(x int, grid [][]string) {
+	if grid[0][x] != "" {
+		return
+	}
+
+	grid[0][x] = Blue + "@" + Reset
+
+	duration := time.Duration(randRange(300, 500)) * time.Millisecond
+
+	for i := 1; i < len(grid); i++ {
+		grid[i-1][x] = ""
+		grid[i][x] = Blue + "@" + Reset
+
+		time.Sleep(duration)
+
+		duration -= 10 * time.Millisecond
+	}
+
+	grid[len(grid)-1][x] = ""
+}
+
 func main() {
 	cols, rows := getTermWH()
 
@@ -43,20 +68,15 @@ func main() {
 
 	go func() {
 		for {
-			for col := range grid[0] {
+			for i := 0; i < cols; i++ {
 				n := rand.IntN(16)
 
 				if n == 1 {
-					grid[0][col] = Blue + "@" + Reset
+					go handleDrop(i, grid)
 				}
 			}
 
-            time.Sleep(time.Second)
-
-            for col := range grid[0] {
-                grid[0][col] = " "
-            }
-
+			time.Sleep(1000 * time.Millisecond)
 		}
 	}()
 
