@@ -27,7 +27,7 @@ func getTermWH() (int, int) {
 		panic("cannot get term size!")
 	}
 
-	return width, height - 1
+	return width, height
 }
 
 func randRange(min, max int) int {
