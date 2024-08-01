@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"math/rand/v2"
+	"math/rand"
 	"os"
 	"os/signal"
 	"time"
@@ -31,7 +31,7 @@ func getTermWH() (int, int) {
 }
 
 func randRange(min, max int) int {
-	return rand.IntN(max-min) + min
+	return rand.Intn(max-min) + min
 }
 
 func splash(origin int, cols int, grid [][]string) {
@@ -85,7 +85,7 @@ func main() {
 	go func() {
 		for {
 			for i := 0; i < cols; i++ {
-				n := rand.IntN(32)
+				n := rand.Intn(32)
 
 				if n == 1 {
 					go handleDrop(i, cols, grid)
