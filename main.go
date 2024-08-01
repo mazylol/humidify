@@ -34,14 +34,28 @@ func randRange(min, max int) int {
 	return rand.IntN(max-min) + min
 }
 
-func handleDrop(x int, grid [][]string) {
+func splash(origin int, cols int, grid [][]string) {
+	if origin > 0 && origin < cols-1 {
+		grid[len(grid)-1][origin-1] = "'"
+		grid[len(grid)-1][origin+1] = "'"
+		grid[len(grid)-2][origin] = "."
+
+		time.Sleep(time.Millisecond * 150)
+
+		grid[len(grid)-1][origin-1] = ""
+		grid[len(grid)-1][origin+1] = ""
+		grid[len(grid)-2][origin] = ""
+	}
+}
+
+func handleDrop(x int, cols int, grid [][]string) {
 	if grid[0][x] != "" {
 		return
 	}
 
 	grid[0][x] = Blue + "@" + Reset
 
-	duration := time.Duration(randRange(300, 500)) * time.Millisecond
+	duration := time.Duration(randRange(300, 700)) * time.Millisecond
 
 	for i := 1; i < len(grid); i++ {
 		grid[i-1][x] = ""
@@ -53,6 +67,8 @@ func handleDrop(x int, grid [][]string) {
 	}
 
 	grid[len(grid)-1][x] = ""
+
+	splash(x, cols, grid)
 }
 
 func main() {
@@ -69,10 +85,10 @@ func main() {
 	go func() {
 		for {
 			for i := 0; i < cols; i++ {
-				n := rand.IntN(16)
+				n := rand.IntN(32)
 
 				if n == 1 {
-					go handleDrop(i, grid)
+					go handleDrop(i, cols, grid)
 				}
 			}
 
