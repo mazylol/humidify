@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"atomicgo.dev/cursor"
@@ -34,41 +35,51 @@ func randRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-func splash(origin int, cols int, grid [][]string) {
+func splash(origin int, cols int, grid [][]string, mu *sync.Mutex) {
 	if origin > 0 && origin < cols-1 {
+        mu.Lock()
 		grid[len(grid)-1][origin-1] = "'"
 		grid[len(grid)-1][origin+1] = "'"
 		grid[len(grid)-2][origin] = "."
+        mu.Unlock()
 
 		time.Sleep(time.Millisecond * 150)
 
+        mu.Lock()
 		grid[len(grid)-1][origin-1] = ""
 		grid[len(grid)-1][origin+1] = ""
 		grid[len(grid)-2][origin] = ""
+        mu.Unlock()
 	}
 }
 
-func handleDrop(x int, cols int, grid [][]string) {
+func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
+    mu.Lock()
 	if grid[0][x] != "" {
 		return
 	}
 
 	grid[0][x] = Blue + "@" + Reset
+    mu.Unlock()
 
 	duration := time.Duration(randRange(300, 700)) * time.Millisecond
 
 	for i := 1; i < len(grid); i++ {
+        mu.Lock()
 		grid[i-1][x] = ""
 		grid[i][x] = Blue + "@" + Reset
+        mu.Unlock()
 
 		time.Sleep(duration)
 
 		duration -= 10 * time.Millisecond
 	}
-
+    
+    mu.Lock()
 	grid[len(grid)-1][x] = ""
+    mu.Unlock()
 
-	splash(x, cols, grid)
+	splash(x, cols, grid, mu)
 }
 
 func main() {
@@ -82,13 +93,15 @@ func main() {
 	cursor.Hide()
 	tm.Clear()
 
+    var mu sync.Mutex
+
 	go func() {
 		for {
 			for i := 0; i < cols; i++ {
 				n := rand.Intn(32)
 
 				if n == 1 {
-					go handleDrop(i, cols, grid)
+					go handleDrop(i, cols, grid, &mu)
 				}
 			}
 
@@ -122,7 +135,8 @@ func main() {
 			return
 		default:
 			tm.MoveCursor(1, 1)
-
+            
+            mu.Lock()
 			for _, row := range grid {
 				for _, item := range row {
 					if item == "" {
@@ -135,6 +149,7 @@ func main() {
 
 				tm.Println()
 			}
+            mu.Unlock()
 
 			tm.Flush()
 		}
