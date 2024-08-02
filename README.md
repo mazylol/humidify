@@ -4,6 +4,12 @@ Rain in the terminal
 ![](https://github.com/mazylol/humidify/blob/master/demo.gif)
 
 ## Install
+### AUR
+```bash
+yay -S humidify-git
+```
+
+### Source
 ```bash
 go install github.com/mazylol/humidify
 ```
