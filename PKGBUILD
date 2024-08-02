@@ -1,4 +1,4 @@
-# Maintainer: Landon Porter <mazy@cock.li>
+# Maintainer: Landon Porter <landonp95@gmail.com>
 
 _pkgname=humidify
 pkgname="${_pkgname}-git"
