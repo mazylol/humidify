@@ -37,47 +37,47 @@ func randRange(min, max int) int {
 
 func splash(origin int, cols int, grid [][]string, mu *sync.Mutex) {
 	if origin > 0 && origin < cols-1 {
-        mu.Lock()
+		mu.Lock()
 		grid[len(grid)-1][origin-1] = "'"
 		grid[len(grid)-1][origin+1] = "'"
 		grid[len(grid)-2][origin] = "."
-        mu.Unlock()
+		mu.Unlock()
 
 		time.Sleep(time.Millisecond * 150)
 
-        mu.Lock()
+		mu.Lock()
 		grid[len(grid)-1][origin-1] = ""
 		grid[len(grid)-1][origin+1] = ""
 		grid[len(grid)-2][origin] = ""
-        mu.Unlock()
+		mu.Unlock()
 	}
 }
 
 func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
-    mu.Lock()
+	mu.Lock()
 	if grid[0][x] != "" {
 		return
 	}
 
 	grid[0][x] = Blue + "@" + Reset
-    mu.Unlock()
+	mu.Unlock()
 
 	duration := time.Duration(randRange(300, 700)) * time.Millisecond
 
 	for i := 1; i < len(grid); i++ {
-        mu.Lock()
+		mu.Lock()
 		grid[i-1][x] = ""
 		grid[i][x] = Blue + "@" + Reset
-        mu.Unlock()
+		mu.Unlock()
 
 		time.Sleep(duration)
 
 		duration -= 10 * time.Millisecond
 	}
-    
-    mu.Lock()
+
+	mu.Lock()
 	grid[len(grid)-1][x] = ""
-    mu.Unlock()
+	mu.Unlock()
 
 	splash(x, cols, grid, mu)
 }
@@ -93,7 +93,7 @@ func main() {
 	cursor.Hide()
 	tm.Clear()
 
-    var mu sync.Mutex
+	var mu sync.Mutex
 
 	go func() {
 		for {
@@ -135,8 +135,8 @@ func main() {
 			return
 		default:
 			tm.MoveCursor(1, 1)
-            
-            mu.Lock()
+
+			mu.Lock()
 			for _, row := range grid {
 				for _, item := range row {
 					if item == "" {
@@ -149,7 +149,7 @@ func main() {
 
 				tm.Println()
 			}
-            mu.Unlock()
+			mu.Unlock()
 
 			tm.Flush()
 		}
