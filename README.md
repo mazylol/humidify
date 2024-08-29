@@ -20,15 +20,15 @@ humidify
 ```
 
 ## Features
-- [ ] Change raindrop character (--character)
-- [ ] Change raindrop speed (--speed)
-- [ ] Change raindrop color (--color)
-- [ ] Control number of raindrops falling (--density)
+- [x] Change raindrop character (--character)
+- [x] Change raindrop speed (--speed)
+- [x] Change raindrop color (--color)
+- [x] Control number of raindrops falling (--density)
 - [ ] Change splash size (--splash-size)
-- [ ] Set width of the terminal grid (--width)
-- [ ] Set height of the terminal grid (--height)
-- [ ] Change the gravity, or acceleration of the drops (--gravity)
-- [ ] Disable splash (--no-splash)
+- [x] Set width of the terminal grid (--width)
+- [x] Set height of the terminal grid (--height)
+- [x] Change the gravity, or acceleration of the drops (--gravity)
+- [x] Disable splash (--no-splash)
 
 ## Note
 ~~This program is heaviliy unoptimized. Every drop is running in its own goroutine. So...beware if you are on weaker hardware. Might optimize later. Probably could get away with running multiple drops per goroutine at the same speed without being noticeable.~~

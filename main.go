@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"math/rand"
 	"os"
@@ -14,8 +15,27 @@ import (
 	"golang.org/x/term"
 )
 
-const Blue = "\033[34m"
 const Reset = "\033[0m"
+
+var (
+	character = flag.String("character", "@", "Set the raindrop character")
+	speed     = flag.String("speed", "normal", "Set the raindrop initial speed. [slow,normal,fast]")
+	color     = flag.String("color", "blue", "Set the raindrop color. [blue,red,green,yellow,white]")
+	density   = flag.Int("density", 32, "Set the raindrop density. Lower is more dense")
+
+	width    = flag.Int("width", 0, "Set the width of the terminal")
+	height   = flag.Int("height", 0, "Set the height of the terminal")
+	gravity  = flag.Int("gravity", 10, "Set the gravity, or acceleration of the raindrops. Higher is faster.")
+	noSplash = flag.Bool("no-splash", false, "Disable splash effect")
+)
+
+var colors = map[string]string{
+	"blue":   "\033[34m",
+	"red":    "\033[31m",
+	"green":  "\033[32m",
+	"yellow": "\033[33m",
+	"white":  "\033[37m",
+}
 
 func getTermWH() (int, int) {
 	if !term.IsTerminal(0) {
@@ -59,22 +79,32 @@ func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
 		return
 	}
 
-	grid[0][x] = Blue + "@" + Reset
+	grid[0][x] = colors[*color] + *character + Reset
 	mu.Unlock()
 
-	duration := time.Duration(randRange(300, 700)) * time.Millisecond
+	var duration time.Duration
+
+	switch *speed {
+	case "slow":
+		duration = time.Duration(randRange(500, 1000)) * time.Millisecond
+	case "normal":
+		duration = time.Duration(randRange(300, 700)) * time.Millisecond
+	case "fast":
+		duration = time.Duration(randRange(100, 300)) * time.Millisecond
+	}
+
 	minDuration := 100 * time.Millisecond // Minimum sleep duration
 
 	for i := 1; i < len(grid); i++ {
 		mu.Lock()
 		grid[i-1][x] = ""
-		grid[i][x] = Blue + "@" + Reset
+		grid[i][x] = colors[*color] + *character + Reset
 		mu.Unlock()
 
 		time.Sleep(duration)
 
 		if duration > minDuration {
-			duration -= 10 * time.Millisecond
+			duration -= time.Duration(*gravity) * time.Millisecond
 		}
 	}
 
@@ -82,15 +112,23 @@ func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
 	grid[len(grid)-1][x] = ""
 	mu.Unlock()
 
-	splash(x, cols, grid, mu)
+	if !*noSplash {
+		splash(x, cols, grid, mu)
+	}
 }
 
 func main() {
-	cols, rows := getTermWH()
+	flag.Parse()
 
-	grid := make([][]string, rows)
+	if *width == 0 || *height == 0 {
+		*width, *height = getTermWH()
+	} else {
+		*height--
+	}
+
+	grid := make([][]string, *height)
 	for i := range grid {
-		grid[i] = make([]string, cols)
+		grid[i] = make([]string, *width)
 	}
 
 	cursor.Hide()
@@ -102,14 +140,14 @@ func main() {
 
 	go func() {
 		for {
-			for i := 0; i < cols; i++ {
-				n := rand.Intn(32)
+			for i := 0; i < *width; i++ {
+				n := rand.Intn(*density)
 
 				if n == 1 {
 					sema <- struct{}{}
 					go func(i int) {
 						defer func() { <-sema }()
-						handleDrop(i, cols, grid, &mu)
+						handleDrop(i, *width, grid, &mu)
 					}(i)
 				}
 			}
