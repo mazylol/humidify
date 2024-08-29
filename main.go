@@ -17,7 +17,6 @@ import (
 const Blue = "\033[34m"
 const Reset = "\033[0m"
 
-// cols, rows
 func getTermWH() (int, int) {
 	if !term.IsTerminal(0) {
 		panic("not in a term")
@@ -56,6 +55,7 @@ func splash(origin int, cols int, grid [][]string, mu *sync.Mutex) {
 func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
 	mu.Lock()
 	if grid[0][x] != "" {
+		mu.Unlock()
 		return
 	}
 
@@ -63,6 +63,7 @@ func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
 	mu.Unlock()
 
 	duration := time.Duration(randRange(300, 700)) * time.Millisecond
+	minDuration := 100 * time.Millisecond // Minimum sleep duration
 
 	for i := 1; i < len(grid); i++ {
 		mu.Lock()
@@ -72,7 +73,9 @@ func handleDrop(x int, cols int, grid [][]string, mu *sync.Mutex) {
 
 		time.Sleep(duration)
 
-		duration -= 10 * time.Millisecond
+		if duration > minDuration {
+			duration -= 10 * time.Millisecond
+		}
 	}
 
 	mu.Lock()
@@ -95,13 +98,19 @@ func main() {
 
 	var mu sync.Mutex
 
+	sema := make(chan struct{}, 50)
+
 	go func() {
 		for {
 			for i := 0; i < cols; i++ {
 				n := rand.Intn(32)
 
 				if n == 1 {
-					go handleDrop(i, cols, grid, &mu)
+					sema <- struct{}{}
+					go func(i int) {
+						defer func() { <-sema }()
+						handleDrop(i, cols, grid, &mu)
+					}(i)
 				}
 			}
 
@@ -152,6 +161,8 @@ func main() {
 			mu.Unlock()
 
 			tm.Flush()
+
+			time.Sleep(50 * time.Millisecond)
 		}
 	}
 }
