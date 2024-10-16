@@ -18,7 +18,7 @@ import (
 const Reset = "\033[0m"
 
 var (
-	character = flag.String("character", "@", "Set the raindrop character")
+	character = flag.String("character", "|", "Set the raindrop character")
 	speed     = flag.String("speed", "normal", "Set the raindrop initial speed. [slow,normal,fast]")
 	color     = flag.String("color", "blue", "Set the raindrop color. [blue,red,green,yellow,white]")
 	density   = flag.Int("density", 32, "Set the raindrop density. Lower is more dense")
