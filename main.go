@@ -146,7 +146,7 @@ func main() {
 				Name:        "density",
 				Aliases:     []string{"d"},
 				Value:       32,
-				Usage:       "Set the raindrop color. [blue,red,green,yellow,white]",
+				Usage:       "Set the raindrop density",
 				Destination: &density,
 			},
 			&cli.IntFlag{
